@@ -1,5 +1,5 @@
 # mpulse-technical-assessment
-Templates to stand up various AWS resources using Terraform
+Terraform templates for standing up AWS resources. 
 
 # Technical Assessment Details - Create AWS Resources using Terraform
 
