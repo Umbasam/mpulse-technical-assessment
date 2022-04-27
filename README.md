@@ -1,7 +1,8 @@
 # mpulse-technical-assessment
 Terraform templates for standing up AWS resources. 
 
-# Technical Assessment Details - Create AWS Resources using Terraform
+# Technical Assessment Details
+# Create AWS Resources using Terraform
 
 You are being asked to create AWS resources using Hashicorp's [Terraform](https://terraform.io) tool. This is a 2-step tasks that involves:
 * creating the base infrastructure module that lays out the VPC and associated resources.
