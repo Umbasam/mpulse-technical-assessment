@@ -18,6 +18,6 @@ provider "aws" {
 #   * Be ready to show or explain how you would use this host to connect to the private hosts
 
 resource "aws_ec2_host" "private_ec2" {
-  availability_zone = "value" # Need to add output from aws_network
+  availability_zone = var.availability_zone_one
 
 }
