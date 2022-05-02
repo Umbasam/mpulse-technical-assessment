@@ -40,6 +40,9 @@ resource "aws_instance" "ec2_private" {
   instance_type = "t2.micro"
   key_name      = aws_key_pair.deployer.id
   subnet_id     = var.private_subnet
+  tags = {
+    Name = "ec2_private"
+  }
 }
 
 # Public EC2 Instance
@@ -75,4 +78,7 @@ resource "aws_instance" "ec2_public" {
   key_name               = aws_key_pair.deployer.id
   subnet_id              = var.public_subnet
   vpc_security_group_ids = [aws_security_group.ec2_public.id]
+  tags = {
+    Name = "ec2_public"
+  }
 }
