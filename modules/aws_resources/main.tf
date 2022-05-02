@@ -42,7 +42,7 @@ resource "aws_security_group" "sg_ec2_public" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description = "TLS from VPC"
+    description = "SSH from Inbound IP"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
