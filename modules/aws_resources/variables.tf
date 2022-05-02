@@ -11,6 +11,6 @@ variable "database_subnet" {
 }
 
 variable "inbound_ssh_ip" {
-  description = "This IP will be allowed SSH traffic into the ec2_public bastion host"
+  description = "This IP, expressed in CIDR notation, will be allowed SSH traffic into the ec2_public bastion host"
   type        = string
 }
