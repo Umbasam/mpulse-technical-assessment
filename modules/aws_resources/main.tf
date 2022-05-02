@@ -73,6 +73,6 @@ resource "aws_instance" "ec2_public" {
   ami                    = data.aws_ami.amazon_linux_2.id
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.deployer.id
-  subnet_id              = var.private_subnet
+  subnet_id              = var.public_subnet
   vpc_security_group_ids = [aws_security_group.ec2_public.id]
 }
