@@ -13,6 +13,10 @@ variable "deployer_public_key" {
   description = "RSA format public key for the keypair used by the EC2 instances"
 }
 
+variable "vpc_id" {
+  description = "The VPC this module will deploy resources to"
+}
+
 # Subnet definitions
 variable "public_subnet" {
   description = "The subnet used for publicly accessible resources"

@@ -39,14 +39,14 @@ resource "aws_instance" "ec2_private" {
   ami           = data.aws_ami.amazon_linux_2.id
   instance_type = "t2.micro"
   subnet_id     = var.private_subnet
-  key_name      = deployer
+  key_name      = deployer.arn
 }
 
 # Public EC2 Instance
 resource "aws_security_group" "sg_ec2_public" {
   name        = "sg_ec2_public"
   description = "Allow SSH inbound from specified IP"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = var.vpc_id
 
   ingress {
     description = "SSH from Inbound IP"
@@ -73,6 +73,6 @@ resource "aws_instance" "ec2_public" {
   ami             = data.aws_ami.amazon_linux_2.id
   instance_type   = "t2.micro"
   subnet_id       = var.private_subnet
-  security_groups = sg_ec2_public
-  key_name        = deployer
+  security_groups = sg_ec2_public.arn
+  key_name        = deployer.arn
 }

@@ -5,5 +5,5 @@ module "aws_network" {
 module "aws_resources" {
   source = "./modules/aws_resources"
 
-  availability_zone_one = module.aws_network.availability_zone_one
+  vpc_id = module.aws_network.vpc_id
 }
