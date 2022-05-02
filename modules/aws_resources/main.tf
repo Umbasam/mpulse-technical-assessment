@@ -28,11 +28,18 @@ data "aws_ami" "amazon_linux_2" {
   }
 }
 
+# Key pair used to connect to bastion host "ec2_public", will define the private EC2 with it as well
+resource "aws_key_pair" "deployer" {
+  key_name   = "deployer-key"
+  public_key = var.deployer_public_key
+}
+
 # Private EC2 Instance
 resource "aws_instance" "ec2_private" {
   ami           = data.aws_ami.amazon_linux_2.id
   instance_type = "t2.micro"
   subnet_id     = var.private_subnet
+  key_name      = deployer
 }
 
 # Public EC2 Instance
@@ -67,4 +74,5 @@ resource "aws_instance" "ec2_public" {
   instance_type   = "t2.micro"
   subnet_id       = var.private_subnet
   security_groups = sg_ec2_public
+  key_name        = deployer
 }
