@@ -30,5 +30,37 @@ resource "aws_instance" "ec2_private" {
   ami           = data.aws_ami.amazon_linux_2.id
   instance_type = "t2.micro"
   subnet_id     = var.private_subnet
+}
 
+resource "aws_security_group" "sg_ec2_public" {
+  name        = "sg_ec2_public"
+  description = "Allow SSH inbound from specified IP"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.inbound_ssh_ip]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  tags = {
+    Name = "sg_ec2_public"
+  }
+}
+
+resource "aws_instance" "ec2_public" {
+  ami             = data.aws_ami.amazon_linux_2.id
+  instance_type   = "t2.micro"
+  subnet_id       = var.private_subnet
+  security_groups = sg_ec2_public
 }
