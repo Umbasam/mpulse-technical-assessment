@@ -138,10 +138,7 @@ module "lambda_function" {
 }
 
 resource "aws_cloudwatch_event_target" "ec2_scheduler_function" {
-  for_each = {
-    "${module.lambda_function[0].lambda_function_arn}" = "${aws_cloudwatch_event_rule.ec2_scheduler[0].id}",
-    "${module.lambda_function[1].lambda_function_arn}" = "${aws_cloudwatch_event_rule.ec2_scheduler[1].id}"
-  }
-  arn  = each.key
-  rule = each.value
+  for_each = var.ec2_scheduler_triggers
+  arn      = module.lambda_function[each.key].lambda_function_arn
+  rule     = aws_cloudwatch_event_rule.ec2_scheduler[each.key].id
 }
