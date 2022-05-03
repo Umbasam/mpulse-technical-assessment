@@ -107,38 +107,41 @@ resource "aws_db_instance" "this" {
 #   * stop at 6pm PT every day
 #   * start at 8am PT every day
 
+resource "aws_cloudwatch_event_rule" "ec2_scheduler" {
+  for_each            = var.ec2_scheduler_triggers
+  name                = "ec2_${each.key}"
+  description         = "EC2 Scheduler Rule"
+  schedule_expression = each.value
+}
+
 module "lambda_function" {
   source   = "terraform-aws-modules/lambda/aws"
-  for_each = var.ec2_scheduler_triggers
+  for_each = aws_cloudwatch_event_rule.ec2_scheduler
 
-  function_name = "ec2-scheduler-" + each.key
-  description   = "This function" + each.key + "s the specified EC2 instance at specified times"
+  function_name = "${each.value.name}_function"
+  description   = "${each.value.name}_function performs the action at using this schedule: ${each.value.schedule_expression}"
   handler       = "main.lambda_handler"
   runtime       = "python3.8"
 
-  source_path = "./src/ec2-scheduler"
+  source_path = "./modules/aws_resources/src/ec2-scheduler"
 
   environment_variables = {
-    SCHEDULER_ACTION = each.key
+    SCHEDULER_ACTION = each.value.name
     INSTANCE_ID      = aws_instance.ec2_private.id
   }
   allowed_triggers = {
     CloudwatchEventRule = {
       principal  = "events.amazonaws.com"
-      source_arn = aws_cloudwatch_event_rule.scheduler.arn
+      source_arn = each.value.arn
     }
   }
 }
 
-resource "aws_cloudwatch_event_rule" "ec2_scheduler" {
-  for_each            = module.lambda_function
-  name                = "ec2_scheduler_" + each.key
-  description         = "EC2 Scheduler Rule"
-  schedule_expression = each.value
-}
-
-resource "aws_cloudwatch_event_target" "scan_ami_lambda_function" {
-  for_each = lambda_function
-  rule     = aws_cloudwatch_event_rule.scan_ami.name
-  arn      = module.lambda_function.lambda_function_arn
+resource "aws_cloudwatch_event_target" "ec2_scheduler_function" {
+  for_each = {
+    "${module.lambda_function[0].lambda_function_arn}" = "${aws_cloudwatch_event_rule.ec2_scheduler[0].id}",
+    "${module.lambda_function[1].lambda_function_arn}" = "${aws_cloudwatch_event_rule.ec2_scheduler[1].id}"
+  }
+  arn  = each.key
+  rule = each.value
 }
