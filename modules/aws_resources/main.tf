@@ -111,6 +111,16 @@ resource "aws_db_instance" "this" {
 #   * stop at 6pm PT every day
 #   * start at 8am PT every day
 
+# Creates the package so the "lambda_function" resources do not have to
+module "lambda_package" {
+  source = "terraform-aws-modules/lambda/aws"
+
+  create_function = false
+
+  runtime     = "python3.8"
+  source_path = "${path.module}/src/ec2-scheduler"
+}
+
 resource "aws_cloudwatch_event_rule" "ec2_scheduler" {
   for_each            = var.ec2_scheduler_triggers
   name                = each.key
@@ -128,7 +138,8 @@ module "lambda_function" {
   runtime       = "python3.8"
   publish       = true
 
-  source_path = "./modules/aws_resources/src/ec2-scheduler"
+  create_package         = false
+  local_existing_package = module.lambda_package.local_filename
 
   # Env variables are used to determine if the handler function will be stopping or starting the ec2
   environment_variables = {
