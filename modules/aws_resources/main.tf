@@ -103,6 +103,10 @@ resource "aws_db_instance" "this" {
 }
 
 # Lambda-based Python function
+# This uses for_each to create 2 sets of resources: ec2_start and ec2_stop.
+# The functions are kept separated per the technical assessment instructions
+# but, in the future, this could potentially be handled by a single function.
+
 # * Create Python lambda functions for stopping and starting the private EC2 instance and schedule them to:
 #   * stop at 6pm PT every day
 #   * start at 8am PT every day
@@ -119,13 +123,14 @@ module "lambda_function" {
   for_each = aws_cloudwatch_event_rule.ec2_scheduler
 
   function_name = "${each.value.name}_function"
-  description   = "${each.value.name}_function performs the action at using this schedule: ${each.value.schedule_expression}"
+  description   = "${each.value.name}_function runs using this schedule: ${each.value.schedule_expression}"
   handler       = "main.lambda_handler"
   runtime       = "python3.8"
   publish       = true
 
   source_path = "./modules/aws_resources/src/ec2-scheduler"
 
+  # Env variables are used to determine if the handler function will be stopping or starting the ec2
   environment_variables = {
     SCHEDULER_ACTION = each.value.name
     INSTANCE_ID      = aws_instance.ec2_private.id
@@ -134,6 +139,16 @@ module "lambda_function" {
     CloudwatchEventRule = {
       principal  = "events.amazonaws.com"
       source_arn = each.value.arn
+    }
+  }
+
+  # Creates an inline policy with the following statements
+  attach_policy_statements = true
+  policy_statements = {
+    ec2 = {
+      effect    = "Allow",
+      actions   = ["ec2:startInstances", "ec2:stopInstances"],
+      resources = [aws_instance.ec2_private.arn]
     }
   }
 }
