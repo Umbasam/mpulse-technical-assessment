@@ -122,6 +122,7 @@ module "lambda_function" {
   description   = "${each.value.name}_function performs the action at using this schedule: ${each.value.schedule_expression}"
   handler       = "main.lambda_handler"
   runtime       = "python3.8"
+  publish       = true
 
   source_path = "./modules/aws_resources/src/ec2-scheduler"
 
