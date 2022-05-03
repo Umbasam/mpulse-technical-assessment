@@ -28,6 +28,16 @@ variable "ec2_scheduler_triggers" {
   }
 }
 
+variable "default_tags" {
+  default = {
+    Environment = "dev"
+    Owner       = "Jeremy"
+    Terraform   = "true"
+  }
+  description = "Default tags to apply to resources"
+  type        = map(string)
+}
+
 # Networking vars
 variable "region" {
   default     = "us-west-2"
