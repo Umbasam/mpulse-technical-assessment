@@ -1,5 +1,18 @@
 # mpulse-technical-assessment
-Terraform templates for standing up AWS resources. 
+Terraform modules for standing up AWS resources. 
+
+To run, you will need to provide three variables:
+1. deployer_public_key - A public SSH key to be used to SSH into the "ec2_public" instance
+2. inbound_ssh_ip - An IP or block of IPs, expressed in CIDR notation(Ex. X.X.X.X/32), that the "ec2_public" instance allows SSH traffic in from. 
+3. db_password - The password used for the database master user in the Postgres DB
+
+Other variables can be set as well, but either have logical defaults set or use outputs from another module.
+
+## Features
+- Creates base VPC network with two subnets for each category: Public, Private, and Database
+- Stands up two EC2 instances, ec2_private and ec2_public, with SSH access to ec2_public configured via variables
+- Builds a Postgres 13.6 database within the Database subnet group
+- Deploys two Lambda functions for scheduling the "ec2_public" instance. One to stop the instance and the other to start it.
 
 # Technical Assessment Details
 # Create AWS Resources using Terraform
