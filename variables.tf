@@ -15,10 +15,16 @@ variable "default_tags" {
 }
 
 variable "inbound_ssh_ip" {
+  default     = ""
   description = "This IP, expressed in CIDR notation, will be allowed SSH traffic into the ec2_public bastion host"
   type        = string
 }
 
 variable "deployer_public_key" {
   description = "RSA format public key for the keypair used by the EC2 instances"
+}
+
+variable "db_password" {
+  description = "Password for DB master user"
+  type        = string
 }

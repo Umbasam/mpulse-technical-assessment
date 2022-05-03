@@ -15,6 +15,7 @@ module "aws_resources" {
   # Ex. terraform apply -var-file=../personal.tfvars
   deployer_public_key = var.deployer_public_key
   inbound_ssh_ip      = var.inbound_ssh_ip
+  db_password         = var.db_password
 
   # Variables from the output of aws_network module
   vpc_id          = module.aws_network.vpc_id
