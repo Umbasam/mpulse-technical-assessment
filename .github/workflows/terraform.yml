@@ -40,7 +40,7 @@ jobs:
     - name: Terraform Plan
       id: plan
       if: github.event_name == 'pull_request'
-      run: terraform plan -no-color -input=false -var "deployer_public_key=${{  secrets.DEFAULT_PUBLIC_KEY  }}" -var "inbound_ssh_ip=${{  secrets.DEFAULT_INBOUND_SSH_IP  }}"
+      run: terraform plan -no-color -input=false -var "deployer_public_key=${{  secrets.DEFAULT_PUBLIC_KEY  }}" -var "inbound_ssh_ip=${{  secrets.DEFAULT_INBOUND_SSH_IP  }}" -var "db_password=${{  secrets.DEFAULT_DB_PASSWORD  }}"
       continue-on-error: true
 
     - name: Update Pull Request
