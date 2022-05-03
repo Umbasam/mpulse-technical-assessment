@@ -82,3 +82,22 @@ resource "aws_instance" "ec2_public" {
     Name = "ec2_public"
   }
 }
+
+# RDS Postgres DB
+# * Create an RDS - Postgres instance
+#   * single db instance
+#   * 13.x version
+#   * db.t4g.micro instance type
+#   * in database subnet
+
+resource "aws_db_instance" "this" {
+  allocated_storage    = 20
+  db_name              = "postgres_db"
+  db_subnet_group_name = var.database_subnet
+  engine               = "postgres"
+  engine_version       = "13.6" # Latest 13.x version release
+  instance_class       = "db.t4g.micro"
+  password             = var.db_password
+  skip_final_snapshot  = true # Disables taking a snapshot before the db's deletion, which is unnecessary for this assessement
+  username             = var.db_username
+}
