@@ -20,6 +20,14 @@ variable "deployer_public_key" {
   type        = string
 }
 
+variable "ec2_scheduler_triggers" {
+  # Default is using PDT. PST hours are 2 and 16 respectively. Need to figure out solution for the switch-over
+  default = {
+    "stop"  = "cron(0 1 * * TUE-SAT *)",
+    "start" = "cron(0 15 * * MON-FRI *)"
+  }
+}
+
 # Networking vars
 variable "region" {
   default     = "us-west-2"
