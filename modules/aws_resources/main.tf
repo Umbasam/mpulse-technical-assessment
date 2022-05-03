@@ -101,3 +101,71 @@ resource "aws_db_instance" "this" {
   skip_final_snapshot  = true # Disables taking a snapshot before the db's deletion, which is unnecessary for this assessement
   username             = var.db_username
 }
+
+# Lambda-based Python function
+# This uses for_each to create 2 sets of resources: ec2_start and ec2_stop.
+# The functions are kept separated per the technical assessment instructions
+# but, in the future, this could potentially be handled by a single function.
+
+# * Create Python lambda functions for stopping and starting the private EC2 instance and schedule them to:
+#   * stop at 6pm PT every day
+#   * start at 8am PT every day
+
+# Creates the package so the "lambda_function" resources do not have to
+module "lambda_package" {
+  source = "terraform-aws-modules/lambda/aws"
+
+  create_function = false
+
+  runtime     = "python3.8"
+  source_path = "${path.module}/src/ec2-scheduler"
+}
+
+resource "aws_cloudwatch_event_rule" "ec2_scheduler" {
+  for_each            = var.ec2_scheduler_triggers
+  name                = each.key
+  description         = "EC2 Scheduler Rule"
+  schedule_expression = each.value
+}
+
+module "lambda_function" {
+  source   = "terraform-aws-modules/lambda/aws"
+  for_each = aws_cloudwatch_event_rule.ec2_scheduler
+
+  function_name = "${each.value.name}_function"
+  description   = "${each.value.name}_function runs using this schedule: ${each.value.schedule_expression}"
+  handler       = "main.lambda_handler"
+  runtime       = "python3.8"
+  publish       = true
+
+  create_package         = false
+  local_existing_package = module.lambda_package.local_filename
+
+  # Env variables are used to determine if the handler function will be stopping or starting the ec2
+  environment_variables = {
+    SCHEDULER_ACTION = each.value.name
+    INSTANCE_ID      = aws_instance.ec2_private.id
+  }
+  allowed_triggers = {
+    CloudwatchEventRule = {
+      principal  = "events.amazonaws.com"
+      source_arn = each.value.arn
+    }
+  }
+
+  # Creates an inline policy with the following statements
+  attach_policy_statements = true
+  policy_statements = {
+    ec2 = {
+      effect    = "Allow",
+      actions   = ["ec2:startInstances", "ec2:stopInstances"],
+      resources = [aws_instance.ec2_private.arn]
+    }
+  }
+}
+
+resource "aws_cloudwatch_event_target" "ec2_scheduler_function" {
+  for_each = var.ec2_scheduler_triggers
+  arn      = module.lambda_function[each.key].lambda_function_arn
+  rule     = aws_cloudwatch_event_rule.ec2_scheduler[each.key].id
+}
