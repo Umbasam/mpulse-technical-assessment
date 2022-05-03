@@ -109,7 +109,7 @@ resource "aws_db_instance" "this" {
 
 resource "aws_cloudwatch_event_rule" "ec2_scheduler" {
   for_each            = var.ec2_scheduler_triggers
-  name                = "ec2_${each.key}"
+  name                = each.key
   description         = "EC2 Scheduler Rule"
   schedule_expression = each.value
 }
