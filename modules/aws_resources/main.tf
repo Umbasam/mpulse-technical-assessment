@@ -101,3 +101,44 @@ resource "aws_db_instance" "this" {
   skip_final_snapshot  = true # Disables taking a snapshot before the db's deletion, which is unnecessary for this assessement
   username             = var.db_username
 }
+
+# Lambda-based Python function
+# * Create Python lambda functions for stopping and starting the private EC2 instance and schedule them to:
+#   * stop at 6pm PT every day
+#   * start at 8am PT every day
+
+module "lambda_function" {
+  source   = "terraform-aws-modules/lambda/aws"
+  for_each = var.ec2_scheduler_triggers
+
+  function_name = "ec2-scheduler-" + each.key
+  description   = "This function" + each.key + "s the specified EC2 instance at specified times"
+  handler       = "main.lambda_handler"
+  runtime       = "python3.8"
+
+  source_path = "./src/ec2-scheduler"
+
+  environment_variables = {
+    SCHEDULER_ACTION = each.key
+    INSTANCE_ID      = aws_instance.ec2_private.id
+  }
+  allowed_triggers = {
+    CloudwatchEventRule = {
+      principal  = "events.amazonaws.com"
+      source_arn = aws_cloudwatch_event_rule.scheduler.arn
+    }
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "ec2_scheduler" {
+  for_each            = module.lambda_function
+  name                = "ec2_scheduler_" + each.key
+  description         = "EC2 Scheduler Rule"
+  schedule_expression = each.value
+}
+
+resource "aws_cloudwatch_event_target" "scan_ami_lambda_function" {
+  for_each = lambda_function
+  rule     = aws_cloudwatch_event_rule.scan_ami.name
+  arn      = module.lambda_function.lambda_function_arn
+}
